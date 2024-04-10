@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Price Comparison</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1900px;
+            display: flex;
+            gap: 20px;
+            justify-content: flex-start;
+        }
+
+        .product-container {
+            width: 66.66%;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .right-container {
+            width: 33.33%;
+        }
+
+        .another-box-container {
+            background-color: #5452ff;
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 20px; /* Adjust as needed */
+            height: fit-content; /* Adjust height based on content */
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        .product-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .product-wrapper {
+            width: calc(375px);
+            position: relative;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        .product-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .amazon-arrow {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background-color: #007bff;
+            clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .amazon-arrow:hover {
+            background-color: #0056b3;
+        }
+
+        .product-details {
+            font-size: 14px;
+        }
+
+        .amazon-logo {
+            width: 100px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .product-container, .another-box-container {
+                width: 100%;
+            }
+            .product-wrapper {
+            width: calc(50% - 20px); /* Adjust for 2 items per row on smaller screens */
+            }
+
+        .information-content {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        min-height: 100px;
+        }
+
+        .information-content p {
+        margin: 0;
+        padding: 5px 0;
+        }
+
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Product Container -->
+        <div class="product-container">
+            <!-- Amazon Logo -->
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/1024px-Amazon_logo.svg.png" alt="Amazon Logo" class="amazon-logo">
+            <h1>Product Price Comparison</h1>
+            {% if product_details %}
+                <h2>Product Details</h2>
+                <div class="product-list">
+                    {% set count = 0 %}
+                    <div class="row">
+                        {% for product in product_details %}
+                            {% if product.product_name != "N/A" %}
+                                <div class="product-wrapper">
+                                    <!-- Display product image -->
+                                    {% if product.image_url %}
+                                        <img src="{{ product.image_url }}" alt="{{ product.product_name }}" class="product-image">
+                                    {% else %}
+                                        <p>No picture available</p>
+                                    {% endif %}
+                                    <!-- Display Amazon image with toggle -->
+                                    <div class="amazon-arrow" onclick="toggleAmazonImage(this, '{{ product.image_url }}', '{{ product.amazon_image_url }}')"></div>
+                                    {% if product.amazon_image_url %}
+                                        <img src="{{ product.amazon_image_url }}" alt="{{ product.product_name }}" class="amazon-image" style="display:none; max-width: 100%; height: auto;">
+                                    {% endif %}
+                                    <!-- Display product details -->
+                                    <div class="product-details">
+                                        <strong>{{ product.product_name }}</strong><br>
+                                        <p><strong>Product Price:</strong> £{{ product.product_price }}</p>
+                                        {% if product.amazon_price is not none %}
+                                            <p><strong>Amazon Price:</strong> £{{ product.amazon_price }}</p>
+                                            <p><strong>FBA Price:</strong> £{{ product.productFBA_price }}</p>
+                                            <p><strong>FBA Fee:</strong> £{{ product.FBA_fee }}</p>
+                                            <p><strong>Star Rating:</strong> {{ product.star_rating }}</p>
+                                            <p><strong>Number of Reviews:</strong> {{ product.num_reviews }}</p>
+                                            <p><strong>ROI:</strong> {{ product.roi }}%</p>
+                                            <p><strong>Profit Margin:</strong> {{ product.profit_margin }}%</p>
+                                            <p><strong>Sold in past month:</strong> {{ product.bought_past_month }}</p>
+                                            <p><strong>RRP Price:</strong> {{ product.rrp_price }}</p>
+                                            <p><strong>Price Difference Message:</strong> {{ product.price_difference_message[0] }}</p>
+                                            <p><strong>Expected Profit per Item:</strong> {{ product.expected_profit_per_item }}</p>
+                                        {% else %}
+                                            <p>{{ product.price_difference_message }}</p>
+                                            <p>{{ product.expected_profit_per_item }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% set count = count + 1 %}
+                                {% if count % 2 == 0 %}
+                                    </div>
+                                    <div class="row">
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <p>No product details available.</p>
+            {% endif %}
+        </div>
+
+        <!-- Another Box Container -->
+        <div class="right-container">
+            <div class="another-box-container">
+                <h2>Filters</h2>
+                <form method="post" action="{{ url_for('index') }}">
+    
+                    <label for="numProducts">Number of products:</label>
+                    <input type="number" id="numProducts" name="num_products" min="0" max="10" placeholder="Enter number of products" required><br><br>
+    
+                    <label for="maxPrice">Maximum Price:</label>
+                    <input type="number" id="maxPrice" name="maxPrice" min="0" step="1" placeholder="Enter maximum price"><br><br>
+        
+                    <label for="minStarRating">Minimum Star Rating:</label>
+                    <input type="number" id="minStarRating" name="minStarRating" min="0" max="5" step="0.1" placeholder="Enter star rating"><br><br>
+        
+                    <label for="minReviews">Minimum Number of Reviews:</label>
+                    <input type="number" id="minReviews" name="minReviews" min="0" step="1" placeholder="Enter review count"><br><br>
+        
+                    <label for="minROI">Minimum ROI:</label>
+                    <input type="number" id="minROI" name="minROI" min="0" step="0.01" placeholder="Enter desired ROI"><br><br>
+        
+                    <label for="minSold">Minimum Sold in Past Month:</label>
+                    <input type="number" id="minSold" name="minSold" min="0" step="1" placeholder="Enter required sold data"><br><br>
+        
+                    <label for="minProfit">Minimum Expected Profit:</label>
+                    <input type="number" id="minProfit" name="minProfit" min="0" step="0.01" placeholder="Enter profit"><br><br>
+    
+                    <button type="submit" name="scrape_lego">Scrape Lego Products</button>
+                    <button type="submit" name="scrape_hamleys">Scrape Hamleys Products</button><br><br>
+
+                </form>
+
+                <div class="Information">
+                    <h2>Product Definitions and Key Information</h2>
+                    <p><strong>General product analysis</strong>: All calculations and values are based on using the Product FBA price and amazon price.</p>
+                    <p><strong>ROI</strong>: Return on investment is a value which represents the volume of profit gathered from each item</p>
+                    <p><strong>FBA fee calculations</strong>: The FBA calculations are based on the standard FBA fee which is 15%.</p>
+                    <p><strong>Stock availability</strong>: Stock availability will only show low stock.</p>
+                    <p><strong>RRP or Was price</strong>: Reccomended retail price or was price is the original price given.</p>
+                    <p><strong>Past month sold </strong>: Any items with no sold past month data means less than 50 items</p>
+                    <!-- Or an input field if single-line -->
+                    <!-- <input type="text" id="writeText" placeholder="Write here..."> -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript function to toggle Amazon image display -->
+    <script>
+        function toggleAmazonImage(arrow, productImageUrl, amazonImageUrl) {
+            var productWrapper = arrow.parentNode;
+            var productImage = productWrapper.querySelector('.product-image');
+            var amazonImage = productWrapper.querySelector('.amazon-image');
+
+            // Check if the product image is currently visible
+            var isProductImageVisible = productImage.style.display !== "none";
+
+            // Toggle visibility of the product and Amazon images
+            if (isProductImageVisible) {
+                productImage.style.display = "none";
+                amazonImage.style.display = "block";
+            } else {
+                productImage.style.display = "block";
+                amazonImage.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
